@@ -1,28 +1,56 @@
-const { Console } = require('console');
-const db = require('mongoose')
-require('dotenv/config')
-MONGODB_URI=process.env.MONGODB_URI
-db.Promise = global.Promise;
-db.connect(MONGODB_URI, {
-    useNewUrlParser: true
-}).then(() => {console.log("Conectada con exito")})
 
-
-const list = [];
+const { rejects } = require('assert')
+const { resolve } = require('path')
+const Model = require('./model')
 
 const addMessage = (message) => {
-    const myMessage = new db.Model(message);
-    myMessage.save();
+    const myMessage = new Model(message)
+    myMessage.save()
     // list.push(message);
 }
 
-const getMessage = () => {
-    return list;
+const getMessage =  (filterUser) => {
+    return new Promise((resolve, reject) => {
+         let filter = {};
+    if (filterUser !== null) {
+        filter = { user: filterUser }
+    }
+    
+    // Buscamos por el filtro 
+    const messages =  Model.find(filter)
+    .populate('user')
+    .exec((error, populated) => {
+        if (error) {
+            rejects(error)
+            return false
+        }
+        resolve(populated)
+    })
+    })
+   
+    
+
+    
+}
+
+const updateText = async (id, message) => {
+    const foundMessage = await Model.findOne({
+        _id: id
+    })
+
+    foundMessage.message = message;
+    const newMessage = await foundMessage.save();
+    return newMessage
+}
+const deleteText = async (id) => {
+    return Model.deleteOne({
+        _id: id
+    })
 }
 
 module.exports = { 
     add: addMessage,
-    list: getMessage 
-    // get
-    // update
+    list: getMessage,
+    updateText: updateText,
+    remove: deleteText
 } 

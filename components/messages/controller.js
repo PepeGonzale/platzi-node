@@ -1,8 +1,9 @@
+
 const store = require('./store')
 
-const addMessage = (user, message) => {
+const addMessage = (chat, user, message) => {
     return new Promise((resolve, reject) => {
-        if (!user || !message) {
+        if (!user || !message ||!chat) {
             console.error('[messageController] No hay usuario o mensaje')
             return reject('Los datos son incorrectos')
         }
@@ -15,11 +16,40 @@ const addMessage = (user, message) => {
         resolve(fullMessage)
     })
 };
-const getMessages = () => {
+const getMessages = (filterUser) => {
     return new Promise((resolve, reject) => {
-        resolve(store.list());
+        resolve(store.list(filterUser));
     })
 }
+
+const updateMessage =  (id, text) => {
+    return new Promise(async (resolve, reject) => {
+        if (!id || !text) {
+            reject("Invalid data")
+            return false;
+        }
+
+        const result = await store.updateText(id, text)
+        resolve(result)
+    })
+};
+
+const deleteMessage = (id) => {
+    return new Promise((resolve, reject) => {
+        if (!id) {
+            reject("Parametros invalido")
+            return false
+        }
+        store.remove(id)
+        .then(() => {
+            resolve();
+        })
+        .catch(e => {
+            reject(e)
+        })
+    })
+}
+
 // Se pone como objeto para poder acceder a cualquier funcion que se cre
-module.exports = {addMessage, getMessages};
+module.exports = {addMessage, getMessages, updateMessage, deleteMessage};
 
